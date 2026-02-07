@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Feed Mosaico Instagram</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .gradient-main {
+      background: linear-gradient(90deg, #0097b2, #7ed957);
+    }
+    
+    .gradient-text {
+      background: linear-gradient(90deg, #0097b2, #7ed957);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .gradient-border {
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(90deg, #0097b2, #7ed957) border-box;
+    }
+    
+    .upload-zone {
+      border: 3px dashed #0097b2;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #7ed957;
+      background: rgba(0, 151, 178, 0.05);
+      transform: scale(1.01);
+    }
+    
+    .mosaic-piece {
+      transition: all 0.3s ease;
+    }
+    
+    .mosaic-piece:hover {
+      transform: scale(1.05);
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(0, 151, 178, 0.3);
+    }
+    
+    .btn-gradient {
+      background: linear-gradient(90deg, #0097b2, #7ed957);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 151, 178, 0.4);
+    }
+    
+    .btn-gradient:active {
+      transform: translateY(0);
+    }
+    
+    .phone-frame {
+      background: #000;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    }
+    
+    .phone-screen {
+      background: #fafafa;
+      border-radius: 32px;
+      overflow: hidden;
+    }
+    
+    .phone-notch {
+      width: 120px;
+      height: 28px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .phone-notch::before {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #1a1a1a;
+      border-radius: 50%;
+      right: 20px;
+      top: 8px;
+    }
+    
+    .instagram-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    
+    .instagram-grid img {
+      aspect-ratio: 1;
+      object-fit: cover;
+      width: 100%;
+    }
+    
+    .story-ring {
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      padding: 2px;
+      border-radius: 50%;
+    }
+    
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+    }
+    
+    .config-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 151, 178, 0.1);
+    }
+    
+    .style-option {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .style-option:hover {
+      transform: scale(1.05);
+    }
+    
+    .style-option.selected {
+      ring: 3px;
+      ring-color: #0097b2;
+      transform: scale(1.05);
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #0097b2, #7ed957);
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #0097b2;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    /* Responsividade */
+    @media (max-width: 640px) {
+      .phone-frame {
+        border-radius: 30px;
+        padding: 8px;
+      }
+      .phone-screen {
+        border-radius: 24px;
+      }
+      .phone-notch {
+        width: 90px;
+        height: 22px;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gray-50 overflow-auto">
+  <div id="app" class="min-h-full w-full"><!-- Header -->
+   <header class="gradient-main py-4 sm:py-6 px-4">
+    <div class="max-w-6xl mx-auto text-center">
+     <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2">🎨 Gerador de Feed Mosaico</h1>
+     <p class="text-white/90 text-sm sm:text-base">Crie feeds impressionantes para seu Instagram</p>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8"><!-- Left Column - Upload & Config -->
+     <div class="space-y-6"><!-- Upload Zone -->
+      <div class="config-card p-4 sm:p-6">
+       <h2 class="text-lg sm:text-xl font-bold gradient-text mb-4 flex items-center gap-2"><span>📤</span> Upload da Logo/Imagem</h2>
+       <div id="uploadZone" class="upload-zone rounded-2xl p-6 sm:p-10 text-center cursor-pointer" onclick="document.getElementById('fileInput').click()">
+        <div id="uploadContent">
+         <div class="text-4xl sm:text-5xl mb-3">
+          🖼️
+         </div>
+         <p class="text-gray-600 font-medium text-sm sm:text-base">Arraste sua imagem aqui</p>
+         <p class="text-gray-400 text-xs sm:text-sm mt-1">ou clique para selecionar</p>
+         <p class="text-xs text-gray-400 mt-3">PNG, JPG, SVG (máx. 10MB)</p>
+        </div>
+        <div id="uploadPreview" class="hidden"><img id="previewImage" class="max-h-32 sm:max-h-48 mx-auto rounded-lg shadow-lg" alt="Preview">
+         <p id="fileName" class="mt-3 text-sm text-gray-600 font-medium"></p><button onclick="event.stopPropagation(); removeImage()" class="mt-2 text-red-500 text-sm hover:underline"> ✕ Remover imagem </button>
+        </div>
+       </div><input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+      </div><!-- Configuration -->
+      <div class="config-card p-4 sm:p-6">
+       <h2 class="text-lg sm:text-xl font-bold gradient-text mb-4 flex items-center gap-2"><span>⚙️</span> Configurações</h2><!-- Grid Size -->
+       <div class="mb-5"><label class="block text-sm font-semibold text-gray-700 mb-2">Tamanho do Grid</label>
+        <div class="grid grid-cols-3 gap-2 sm:gap-3"><button onclick="setGridSize(3)" class="grid-size-btn p-2 sm:p-3 rounded-xl border-2 border-gray-200 hover:border-cyan-400 transition-all text-center" data-size="3"> <span class="text-lg sm:text-2xl">▦</span> <p class="text-xs sm:text-sm font-medium mt-1">3×3</p><p class="text-xs text-gray-400">9 posts</p></button> <button onclick="setGridSize(6)" class="grid-size-btn p-2 sm:p-3 rounded-xl border-2 border-gray-200 hover:border-cyan-400 transition-all text-center" data-size="6"> <span class="text-lg sm:text-2xl">▦</span> <p class="text-xs sm:text-sm font-medium mt-1">3×6</p><p class="text-xs text-gray-400">18 posts</p></button> <button onclick="setGridSize(9)" class="grid-size-btn p-2 sm:p-3 rounded-xl border-2 border-gray-200 hover:border-cyan-400 transition-all text-center" data-size="9"> <span class="text-lg sm:text-2xl">▦</span> <p class="text-xs sm:text-sm font-medium mt-1">3×9</p><p class="text-xs text-gray-400">27 posts</p></button>
+        </div>
+       </div><!-- Background Style -->
+       <div class="mb-5"><label class="block text-sm font-semibold text-gray-700 mb-2">Estilo de Fundo</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+         <div onclick="setBgStyle('gradient')" class="style-option p-3 rounded-xl border-2 border-gray-200 text-center" data-style="gradient">
+          <div class="w-full h-10 sm:h-12 rounded-lg gradient-main mb-2"></div>
+          <p class="text-xs font-medium">Gradiente</p>
+         </div>
+         <div onclick="setBgStyle('solid')" class="style-option p-3 rounded-xl border-2 border-gray-200 text-center" data-style="solid">
+          <div class="w-full h-10 sm:h-12 rounded-lg bg-cyan-500 mb-2"></div>
+          <p class="text-xs font-medium">Sólido</p>
+         </div>
+         <div onclick="setBgStyle('pattern')" class="style-option p-3 rounded-xl border-2 border-gray-200 text-center" data-style="pattern">
+          <div class="w-full h-10 sm:h-12 rounded-lg mb-2" style="background: repeating-linear-gradient(45deg, #0097b2 0, #0097b2 10px, #7ed957 10px, #7ed957 20px);"></div>
+          <p class="text-xs font-medium">Padrão</p>
+         </div>
+         <div onclick="setBgStyle('blur')" class="style-option p-3 rounded-xl border-2 border-gray-200 text-center" data-style="blur">
+          <div class="w-full h-10 sm:h-12 rounded-lg mb-2" style="background: linear-gradient(90deg, #0097b299, #7ed95799);"></div>
+          <p class="text-xs font-medium">Blur</p>
+         </div>
+        </div>
+       </div><!-- Colors -->
+       <div class="grid grid-cols-2 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold text-gray-700 mb-2">Cor Primária</label>
+         <div class="flex items-center gap-2"><input type="color" id="primaryColor" value="#0097b2" class="w-10 h-10 rounded-lg cursor-pointer border-0"> <input type="text" id="primaryColorText" value="#0097b2" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm" onchange="updateColorFromText('primary')">
+         </div>
+        </div>
+        <div><label class="block text-sm font-semibold text-gray-700 mb-2">Cor Secundária</label>
+         <div class="flex items-center gap-2"><input type="color" id="secondaryColor" value="#7ed957" class="w-10 h-10 rounded-lg cursor-pointer border-0"> <input type="text" id="secondaryColorText" value="#7ed957" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm" onchange="updateColorFromText('secondary')">
+         </div>
+        </div>
+       </div><!-- Logo Size -->
+       <div class="mb-5"><label class="block text-sm font-semibold text-gray-700 mb-2"> Tamanho da Logo: <span id="logoSizeValue">60</span>% </label> <input type="range" id="logoSize" min="20" max="100" value="60" class="w-full" oninput="updateLogoSize()">
+       </div><!-- Effect Intensity -->
+       <div class="mb-6"><label class="block text-sm font-semibold text-gray-700 mb-2"> Intensidade do Efeito: <span id="effectIntensityValue">60</span>% </label> <input type="range" id="effectIntensity" min="0" max="100" value="60" class="w-full" oninput="updateEffectIntensity()">
+        <div class="grid grid-cols-4 gap-2 mt-3"><button onclick="setEffectIntensity(0)" class="intensity-btn p-2 rounded-lg border-2 border-gray-200 hover:border-cyan-400 transition-all text-xs font-medium">Nenhum</button> <button onclick="setEffectIntensity(33)" class="intensity-btn p-2 rounded-lg border-2 border-gray-200 hover:border-cyan-400 transition-all text-xs font-medium">Leve</button> <button onclick="setEffectIntensity(66)" class="intensity-btn p-2 rounded-lg border-2 border-gray-200 hover:border-cyan-400 transition-all text-xs font-medium">Médio</button> <button onclick="setEffectIntensity(100)" class="intensity-btn p-2 rounded-lg border-2 border-gray-200 hover:border-cyan-400 transition-all text-xs font-medium">Forte</button>
+        </div>
+       </div><!-- Generate Button --> <button onclick="generateMosaic()" id="generateBtn" class="btn-gradient w-full py-3 sm:py-4 rounded-xl text-white font-bold text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"> ✨ Gerar Mosaico </button>
+      </div>
+     </div><!-- Right Column - Preview -->
+     <div class="space-y-6">
+      <div class="config-card p-4 sm:p-6">
+       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 class="text-lg sm:text-xl font-bold gradient-text flex items-center gap-2"><span>👁️</span> Preview do Mosaico</h2><button onclick="openInstagramPreview()" id="previewBtn" class="btn-gradient px-4 py-2 rounded-lg text-white font-medium text-sm disabled:opacity-50 hidden"> 📱 Ver no Instagram </button>
+       </div>
+       <div id="mosaicContainer" class="bg-gray-100 rounded-2xl p-4 min-h-[200px] sm:min-h-[300px] flex items-center justify-center">
+        <div class="text-center text-gray-400">
+         <div class="text-4xl sm:text-5xl mb-3 pulse">
+          🧩
+         </div>
+         <p class="font-medium text-sm sm:text-base">Seu mosaico aparecerá aqui</p>
+         <p class="text-xs sm:text-sm mt-1">Faça upload de uma imagem e clique em gerar</p>
+        </div>
+       </div>
+      </div><!-- Download Section -->
+      <div id="downloadSection" class="config-card p-4 sm:p-6 hidden">
+       <h2 class="text-lg sm:text-xl font-bold gradient-text mb-4 flex items-center gap-2"><span>📥</span> Download das Imagens</h2>
+       <div class="bg-gradient-to-r from-cyan-50 to-green-50 rounded-xl p-4 mb-4">
+        <p class="text-sm text-gray-700 mb-2"><strong>📌 Ordem de postagem:</strong></p>
+        <p class="text-xs text-gray-600">Poste da <strong>última imagem</strong> para a <strong>primeira</strong> para montar o mosaico corretamente no feed.</p>
+       </div>
+       <div id="downloadButtons" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"><!-- Download buttons will be added here -->
+       </div><button onclick="downloadAll()" class="btn-gradient w-full mt-4 py-3 rounded-xl text-white font-bold"> 📦 Baixar Todas as Imagens </button>
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+   <footer class="gradient-main py-4 px-4 mt-8">
+    <div class="max-w-6xl mx-auto text-center">
+     <p class="text-white/90 text-sm">Feito com 💚 para criadores de conteúdo</p>
+    </div>
+   </footer>
+  </div><!-- Instagram Preview Modal -->
+  <div id="instagramModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center p-2 sm:p-4 overflow-auto">
+   <div class="relative w-full max-w-xs sm:max-w-sm h-auto flex flex-col justify-center mx-auto"><!-- Close Button --> <button onclick="closeInstagramPreview()" class="absolute -top-8 sm:-top-12 right-0 text-white text-lg font-medium hover:text-gray-300 flex items-center gap-2 z-10"> ✕ Fechar </button> <!-- Phone Frame -->
+    <div class="phone-frame w-full" style="max-height: 90vh; display: flex; flex-direction: column;">
+     <div class="phone-screen flex flex-col" style="max-height: 88vh; overflow-y-auto;"><!-- Notch -->
+      <div class="phone-notch flex-shrink-0"></div><!-- Instagram Header -->
+      <div class="bg-white px-3 sm:px-4 py-2 border-b border-gray-200 flex items-center justify-between flex-shrink-0"><span class="text-base sm:text-lg">←</span> <span class="font-bold text-xs sm:text-sm">seuperfil</span> <span class="text-base sm:text-lg">⋮</span>
+      </div><!-- Profile Section -->
+      <div class="bg-white px-3 sm:px-4 py-3 sm:py-4 flex-shrink-0">
+       <div class="flex items-start gap-3"><!-- Avatar -->
+        <div class="story-ring p-0.5 rounded-full flex-shrink-0">
+         <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full gradient-main flex items-center justify-center"><span class="text-lg sm:text-2xl">👤</span>
+         </div>
+        </div><!-- Stats -->
+        <div class="flex-1">
+         <div class="flex justify-around text-center mb-2 sm:mb-3">
+          <div>
+           <p id="postsCount" class="font-bold text-xs sm:text-sm">0</p>
+           <p class="text-xs text-gray-500">publicações</p>
+          </div>
+          <div>
+           <p class="font-bold text-xs sm:text-sm">10.5K</p>
+           <p class="text-xs text-gray-500">seguidores</p>
+          </div>
+          <div>
+           <p class="font-bold text-xs sm:text-sm">523</p>
+           <p class="text-xs text-gray-500">seguindo</p>
+          </div>
+         </div>
+        </div>
+       </div><!-- Bio -->
+       <div class="mt-2 sm:mt-3">
+        <p class="font-bold text-xs sm:text-sm">Seu Perfil ✨</p>
+        <p class="text-xs text-gray-600 mt-0.5 sm:mt-1">Criador de conteúdo 🎨</p>
+        <p class="text-xs text-gray-600">Feed Mosaico criado com amor 💚</p>
+       </div><!-- Follow Button --> <button class="btn-gradient w-full mt-2 sm:mt-3 py-1.5 sm:py-2 rounded-lg text-white font-semibold text-xs sm:text-sm"> Seguir </button>
+      </div><!-- Stories Highlights -->
+      <div class="bg-white px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-200 flex-shrink-0">
+       <div class="flex gap-3 overflow-x-auto">
+        <div class="flex flex-col items-center flex-shrink-0">
+         <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-gray-300 flex items-center justify-center"><span class="text-lg sm:text-2xl">+</span>
+         </div><span class="text-xs mt-1">Novo</span>
+        </div>
+        <div class="flex flex-col items-center flex-shrink-0">
+         <div class="story-ring p-0.5 rounded-full">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-200 flex items-center justify-center"><span class="text-base sm:text-xl">🎨</span>
+          </div>
+         </div><span class="text-xs mt-1">Design</span>
+        </div>
+        <div class="flex flex-col items-center flex-shrink-0">
+         <div class="story-ring p-0.5 rounded-full">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-200 flex items-center justify-center"><span class="text-base sm:text-xl">📸</span>
+          </div>
+         </div><span class="text-xs mt-1">Fotos</span>
+        </div>
+       </div>
+      </div><!-- Tab Bar -->
+      <div class="bg-white flex border-b border-gray-200 flex-shrink-0"><button class="flex-1 py-2 sm:py-3 border-b-2 border-black"> <span class="text-base sm:text-lg">▦</span> </button> <button class="flex-1 py-2 sm:py-3 text-gray-400"> <span class="text-base sm:text-lg">🎬</span> </button> <button class="flex-1 py-2 sm:py-3 text-gray-400"> <span class="text-base sm:text-lg">👤</span> </button>
+      </div><!-- Instagram Grid -->
+      <div id="instagramGrid" class="instagram-grid bg-white"><!-- Grid items will be added here -->
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    // State
+    let uploadedImage = null;
+    let gridRows = 3;
+    let bgStyle = 'gradient';
+    let generatedImages = [];
+    
+    const defaultConfig = {
+      app_title: 'Gerador de Feed Mosaico',
+      profile_name: '@seuperfil',
+      primary_color: '#0097b2',
+      secondary_color: '#7ed957',
+      background_color: '#f9fafb',
+      text_color: '#374151',
+      accent_color: '#0097b2'
+    };
+    
+    let config = { ...defaultConfig };
+    
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (newConfig) => {
+          config = { ...defaultConfig, ...newConfig };
+          applyConfig();
+        },
+        mapToCapabilities: (cfg) => ({
+          recolorables: [
+            {
+              get: () => cfg.primary_color || defaultConfig.primary_color,
+              set: (v) => window.elementSdk.setConfig({ primary_color: v })
+            },
+            {
+              get: () => cfg.secondary_color || defaultConfig.secondary_color,
+              set: (v) => window.elementSdk.setConfig({ secondary_color: v })
+            },
+            {
+              get: () => cfg.background_color || defaultConfig.background_color,
+              set: (v) => window.elementSdk.setConfig({ background_color: v })
+            },
+            {
+              get: () => cfg.text_color || defaultConfig.text_color,
+              set: (v) => window.elementSdk.setConfig({ text_color: v })
+            },
+            {
+              get: () => cfg.accent_color || defaultConfig.accent_color,
+              set: (v) => window.elementSdk.setConfig({ accent_color: v })
+            }
+          ],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ['app_title', cfg.app_title || defaultConfig.app_title],
+          ['profile_name', cfg.profile_name || defaultConfig.profile_name]
+        ])
+      });
+    }
+    
+    function applyConfig() {
+      document.getElementById('primaryColor').value = config.primary_color;
+      document.getElementById('primaryColorText').value = config.primary_color;
+      document.getElementById('secondaryColor').value = config.secondary_color;
+      document.getElementById('secondaryColorText').value = config.secondary_color;
+    }
+    
+    // File handling
+    const uploadZone = document.getElementById('uploadZone');
+    
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        processFile(file);
+      }
+    });
+    
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        processFile(file);
+      }
+    }
+    
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadedImage = e.target.result;
+        document.getElementById('uploadContent').classList.add('hidden');
+        document.getElementById('uploadPreview').classList.remove('hidden');
+        document.getElementById('previewImage').src = uploadedImage;
+        document.getElementById('fileName').textContent = file.name;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function removeImage() {
+      uploadedImage = null;
+      document.getElementById('uploadContent').classList.remove('hidden');
+      document.getElementById('uploadPreview').classList.add('hidden');
+      document.getElementById('fileInput').value = '';
+      generatedImages = [];
+      document.getElementById('mosaicContainer').innerHTML = `
+        <div class="text-center text-gray-400">
+          <div class="text-4xl sm:text-5xl mb-3 pulse">🧩</div>
+          <p class="font-medium text-sm sm:text-base">Seu mosaico aparecerá aqui</p>
+          <p class="text-xs sm:text-sm mt-1">Faça upload de uma imagem e clique em gerar</p>
+        </div>
+      `;
+      document.getElementById('downloadSection').classList.add('hidden');
+      document.getElementById('previewBtn').classList.add('hidden');
+    }
+    
+    function setGridSize(rows) {
+      gridRows = rows;
+      document.querySelectorAll('.grid-size-btn').forEach(btn => {
+        btn.classList.remove('border-cyan-500', 'bg-cyan-50');
+        btn.classList.add('border-gray-200');
+      });
+      const selectedBtn = document.querySelector(`[data-size="${rows}"]`);
+      selectedBtn.classList.remove('border-gray-200');
+      selectedBtn.classList.add('border-cyan-500', 'bg-cyan-50');
+    }
+    
+    function setBgStyle(style) {
+      bgStyle = style;
+      document.querySelectorAll('.style-option').forEach(opt => {
+        opt.classList.remove('border-cyan-500', 'bg-cyan-50');
+        opt.classList.add('border-gray-200');
+      });
+      const selectedOpt = document.querySelector(`[data-style="${style}"]`);
+      selectedOpt.classList.remove('border-gray-200');
+      selectedOpt.classList.add('border-cyan-500', 'bg-cyan-50');
+    }
+    
+    function updateColorFromText(type) {
+      if (type === 'primary') {
+        const color = document.getElementById('primaryColorText').value;
+        document.getElementById('primaryColor').value = color;
+      } else {
+        const color = document.getElementById('secondaryColorText').value;
+        document.getElementById('secondaryColor').value = color;
+      }
+    }
+    
+    document.getElementById('primaryColor').addEventListener('input', (e) => {
+      document.getElementById('primaryColorText').value = e.target.value;
+    });
+    
+    document.getElementById('secondaryColor').addEventListener('input', (e) => {
+      document.getElementById('secondaryColorText').value = e.target.value;
+    });
+    
+    function updateLogoSize() {
+      const size = document.getElementById('logoSize').value;
+      document.getElementById('logoSizeValue').textContent = size;
+    }
+    
+    function updateEffectIntensity() {
+      const intensity = document.getElementById('effectIntensity').value;
+      document.getElementById('effectIntensityValue').textContent = intensity;
+    }
+    
+    function setEffectIntensity(value) {
+      document.getElementById('effectIntensity').value = value;
+      updateEffectIntensity();
+      
+      // Update button styles
+      document.querySelectorAll('.intensity-btn').forEach(btn => {
+        btn.classList.remove('border-cyan-500', 'bg-cyan-50');
+        btn.classList.add('border-gray-200');
+      });
+      
+      const buttons = document.querySelectorAll('.intensity-btn');
+      if (value === 0) buttons[0].classList.add('border-cyan-500', 'bg-cyan-50');
+      if (value === 33) buttons[1].classList.add('border-cyan-500', 'bg-cyan-50');
+      if (value === 66) buttons[2].classList.add('border-cyan-500', 'bg-cyan-50');
+      if (value === 100) buttons[3].classList.add('border-cyan-500', 'bg-cyan-50');
+    }
+    
+    // Initialize defaults
+    setGridSize(3);
+    setBgStyle('gradient');
+    
+    async function generateMosaic() {
+      if (!uploadedImage) {
+        showToast('Por favor, faça upload de uma imagem primeiro!', 'error');
+        return;
+      }
+      
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Gerando...';
+      
+      const primaryColor = document.getElementById('primaryColor').value;
+      const secondaryColor = document.getElementById('secondaryColor').value;
+      const logoSize = document.getElementById('logoSize').value / 100;
+      
+      const totalPieces = 3 * gridRows;
+      generatedImages = [];
+      
+      // Create mosaic
+      const mosaicWidth = 1080 * 3;
+      const mosaicHeight = 1080 * gridRows;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = mosaicWidth;
+      canvas.height = mosaicHeight;
+      const ctx = canvas.getContext('2d');
+      
+      // Draw background
+      drawBackground(ctx, mosaicWidth, mosaicHeight, primaryColor, secondaryColor);
+      
+      // Load and draw logo
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = () => {
+          console.error('Failed to load image');
+          resolve();
+        };
+        img.src = uploadedImage;
+      });
+      
+      const imgAspect = img.width / img.height;
+      const canvasAspect = mosaicWidth / mosaicHeight;
+      
+      let drawWidth, drawHeight;
+      if (imgAspect > canvasAspect) {
+        drawWidth = mosaicWidth * logoSize;
+        drawHeight = drawWidth / imgAspect;
+      } else {
+        drawHeight = mosaicHeight * logoSize;
+        drawWidth = drawHeight * imgAspect;
+      }
+      
+      const x = (mosaicWidth - drawWidth) / 2;
+      const y = (mosaicHeight - drawHeight) / 2;
+      
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+      
+      // Split into pieces
+      for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < 3; col++) {
+          const pieceCanvas = document.createElement('canvas');
+          pieceCanvas.width = 1080;
+          pieceCanvas.height = 1080;
+          const pieceCtx = pieceCanvas.getContext('2d');
+          
+          pieceCtx.drawImage(
+            canvas,
+            col * 1080, row * 1080, 1080, 1080,
+            0, 0, 1080, 1080
+          );
+          
+          generatedImages.push({
+            index: row * 3 + col + 1,
+            dataUrl: pieceCanvas.toDataURL('image/png', 1.0)
+          });
+        }
+      }
+      
+      // Display mosaic preview
+      displayMosaic();
+      
+      btn.disabled = false;
+      btn.innerHTML = '✨ Gerar Mosaico';
+      
+      showToast('Mosaico gerado com sucesso! 🎉', 'success');
+    }
+    
+    function drawBackground(ctx, width, height, primary, secondary) {
+      const effectIntensity = parseInt(document.getElementById('effectIntensity').value) / 100;
+      
+      switch (bgStyle) {
+        case 'gradient':
+          const gradient = ctx.createLinearGradient(0, 0, width, 0);
+          gradient.addColorStop(0, primary);
+          gradient.addColorStop(1, secondary);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // Add gradient overlay effect based on intensity
+          if (effectIntensity > 0) {
+            const overlayGradient = ctx.createLinearGradient(0, 0, 0, height);
+            overlayGradient.addColorStop(0, `rgba(255, 255, 255, ${0.3 * effectIntensity})`);
+            overlayGradient.addColorStop(0.5, `rgba(255, 255, 255, ${0.1 * effectIntensity})`);
+            overlayGradient.addColorStop(1, `rgba(0, 0, 0, ${0.2 * effectIntensity})`);
+            ctx.fillStyle = overlayGradient;
+            ctx.fillRect(0, 0, width, height);
+          }
+          break;
+          
+        case 'solid':
+          ctx.fillStyle = primary;
+          ctx.fillRect(0, 0, width, height);
+          
+          // Add texture based on intensity
+          if (effectIntensity > 0) {
+            for (let i = 0; i < width * height / 1000 * effectIntensity; i++) {
+              ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.1 * effectIntensity})`;
+              ctx.fillRect(
+                Math.random() * width,
+                Math.random() * height,
+                Math.random() * 50 + 10,
+                Math.random() * 50 + 10
+              );
+            }
+          }
+          break;
+          
+        case 'pattern':
+          const patternSize = 60;
+          for (let i = -height; i < width + height; i += patternSize * 2) {
+            ctx.fillStyle = primary;
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i + patternSize, 0);
+            ctx.lineTo(i + patternSize + height, height);
+            ctx.lineTo(i + height, height);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = secondary;
+            ctx.beginPath();
+            ctx.moveTo(i + patternSize, 0);
+            ctx.lineTo(i + patternSize * 2, 0);
+            ctx.lineTo(i + patternSize * 2 + height, height);
+            ctx.lineTo(i + patternSize + height, height);
+            ctx.closePath();
+            ctx.fill();
+          }
+          
+          // Add pattern overlay effect based on intensity
+          if (effectIntensity > 0) {
+            ctx.globalAlpha = 0.3 * effectIntensity;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2 * effectIntensity;
+            for (let i = 0; i < 20 * effectIntensity; i++) {
+              ctx.beginPath();
+              ctx.moveTo(Math.random() * width, 0);
+              ctx.lineTo(Math.random() * width, height);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+          }
+          break;
+          
+        case 'blur':
+          const blurGradient = ctx.createLinearGradient(0, 0, width, height);
+          blurGradient.addColorStop(0, primary + '99');
+          blurGradient.addColorStop(0.5, secondary + '99');
+          blurGradient.addColorStop(1, primary + '99');
+          ctx.fillStyle = blurGradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // Add blur circles with intensity control
+          const circleCount = 20 * effectIntensity;
+          for (let i = 0; i < circleCount; i++) {
+            const cx = Math.random() * width;
+            const cy = Math.random() * height;
+            const r = Math.random() * 300 + 100;
+            const circleGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+            circleGradient.addColorStop(0, (i % 2 === 0 ? primary : secondary) + Math.floor(0x40 * effectIntensity).toString(16).padStart(2, '0'));
+            circleGradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = circleGradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          break;
+      }
+    }
+    
+    function displayMosaic() {
+      const container = document.getElementById('mosaicContainer');
+      container.innerHTML = '';
+      container.className = 'bg-gray-100 rounded-2xl p-2 sm:p-4';
+      
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-3 gap-1 sm:gap-2';
+      
+      generatedImages.forEach((img, index) => {
+        const piece = document.createElement('div');
+        piece.className = 'mosaic-piece relative rounded-lg overflow-hidden shadow-md';
+        piece.innerHTML = `
+          <img src="${img.dataUrl}" alt="Peça ${img.index}" class="w-full aspect-square object-cover">
+          <div class="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-bold">
+            ${img.index}
+          </div>
+        `;
+        piece.style.animationDelay = `${index * 50}ms`;
+        piece.classList.add('fade-in');
+        grid.appendChild(piece);
+      });
+      
+      container.appendChild(grid);
+      
+      // Show download section
+      const downloadSection = document.getElementById('downloadSection');
+      downloadSection.classList.remove('hidden');
+      
+      const downloadButtons = document.getElementById('downloadButtons');
+      downloadButtons.innerHTML = '';
+      
+      generatedImages.forEach((img) => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-white border-2 border-gray-200 hover:border-cyan-400 rounded-lg p-2 text-center transition-all hover:shadow-md';
+        btn.innerHTML = `
+          <span class="text-lg sm:text-xl">📥</span>
+          <p class="text-xs font-medium mt-1">${img.index}</p>
+        `;
+        btn.onclick = () => downloadImage(img.index);
+        downloadButtons.appendChild(btn);
+      });
+      
+      // Show preview button
+      document.getElementById('previewBtn').classList.remove('hidden');
+    }
+    
+    function downloadImage(index) {
+      const img = generatedImages.find(i => i.index === index);
+      if (img) {
+        const link = document.createElement('a');
+        link.download = `mosaico_${index}.png`;
+        link.href = img.dataUrl;
+        link.click();
+        showToast(`Imagem ${index} baixada!`, 'success');
+      }
+    }
+    
+    function downloadAll() {
+      generatedImages.forEach((img, i) => {
+        setTimeout(() => {
+          const link = document.createElement('a');
+          link.download = `mosaico_${img.index}.png`;
+          link.href = img.dataUrl;
+          link.click();
+        }, i * 200);
+      });
+      showToast('Baixando todas as imagens...', 'success');
+    }
+    
+    function openInstagramPreview() {
+      const modal = document.getElementById('instagramModal');
+      const grid = document.getElementById('instagramGrid');
+      const postsCount = document.getElementById('postsCount');
+      
+      grid.innerHTML = '';
+      postsCount.textContent = generatedImages.length;
+      
+      generatedImages.forEach((img) => {
+        const imgEl = document.createElement('img');
+        imgEl.src = img.dataUrl;
+        imgEl.alt = `Post ${img.index}`;
+        imgEl.loading = 'lazy';
+        imgEl.style.pointerEvents = 'none';
+        grid.appendChild(imgEl);
+      });
+      
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      
+      // Initialize touch scroll
+      initTouchScroll();
+    }
+    
+    let touchStartY = 0;
+    let touchCurrentY = 0;
+    let isDragging = false;
+    let currentTranslateY = 0;
+    let lastVelocity = 0;
+    let lastTimestamp = 0;
+    
+    function initTouchScroll() {
+      const wrapper = document.getElementById('phoneContentWrapper');
+      const content = document.getElementById('phoneContent');
+      
+      if (!wrapper || !content) return;
+      
+      // Mouse/Touch events
+      wrapper.addEventListener('mousedown', startDrag, false);
+      wrapper.addEventListener('touchstart', startDrag, false);
+      
+      document.addEventListener('mousemove', moveDrag, false);
+      document.addEventListener('touchmove', moveDrag, { passive: false });
+      
+      document.addEventListener('mouseup', endDrag, false);
+      document.addEventListener('touchend', endDrag, false);
+      
+      wrapper.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    
+    function startDrag(e) {
+      const wrapper = document.getElementById('phoneContentWrapper');
+      if (!wrapper.contains(e.target)) return;
+      
+      isDragging = true;
+      touchStartY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+      touchCurrentY = touchStartY;
+      lastTimestamp = Date.now();
+      lastVelocity = 0;
+      
+      const content = document.getElementById('phoneContent');
+      content.style.cursor = 'grabbing';
+    }
+    
+    function moveDrag(e) {
+      if (!isDragging) return;
+      
+      e.preventDefault && e.preventDefault();
+      
+      const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+      const deltaY = currentY - touchCurrentY;
+      
+      const content = document.getElementById('phoneContent');
+      currentTranslateY += deltaY;
+      
+      // Limitar o scroll
+      currentTranslateY = Math.min(currentTranslateY, 0);
+      currentTranslateY = Math.max(currentTranslateY, getMaxScroll());
+      
+      content.style.transform = `translateY(${currentTranslateY}px)`;
+      
+      // Calcular velocidade
+      const now = Date.now();
+      const timeDelta = now - lastTimestamp;
+      if (timeDelta > 0) {
+        lastVelocity = (currentY - touchCurrentY) / timeDelta;
+      }
+      lastTimestamp = now;
+      
+      touchCurrentY = currentY;
+    }
+    
+    function endDrag(e) {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      
+      const content = document.getElementById('phoneContent');
+      content.style.cursor = 'grab';
+      
+      // Inércia
+      let velocity = lastVelocity * 0.95;
+      let rafId;
+      
+      const applyInertia = () => {
+        if (Math.abs(velocity) < 0.1) {
+          cancelAnimationFrame(rafId);
+          return;
+        }
+        
+        currentTranslateY += velocity * 16;
+        
+        // Limitar
+        currentTranslateY = Math.min(currentTranslateY, 0);
+        currentTranslateY = Math.max(currentTranslateY, getMaxScroll());
+        
+        content.style.transform = `translateY(${currentTranslateY}px)`;
+        
+        velocity *= 0.95;
+        rafId = requestAnimationFrame(applyInertia);
+      };
+      
+      applyInertia();
+    }
+    
+    function handleWheel(e) {
+      const wrapper = document.getElementById('phoneContentWrapper');
+      if (!wrapper.contains(e.target)) return;
+      
+      e.preventDefault();
+      
+      const content = document.getElementById('phoneContent');
+      currentTranslateY -= e.deltaY * 0.5;
+      
+      // Limitar
+      currentTranslateY = Math.min(currentTranslateY, 0);
+      currentTranslateY = Math.max(currentTranslateY, getMaxScroll());
+      
+      content.style.transform = `translateY(${currentTranslateY}px)`;
+    }
+    
+    function getMaxScroll() {
+      const wrapper = document.getElementById('phoneContentWrapper');
+      const content = document.getElementById('phoneContent');
+      
+      if (!wrapper || !content) return 0;
+      
+      const wrapperHeight = wrapper.clientHeight;
+      const contentHeight = content.scrollHeight;
+      
+      return -(contentHeight - wrapperHeight);
+    }
+    
+    function closeInstagramPreview() {
+      const modal = document.getElementById('instagramModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    
+    // Close modal on backdrop click
+    document.getElementById('instagramModal').addEventListener('click', (e) => {
+      if (e.target.id === 'instagramModal') {
+        closeInstagramPreview();
+      }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeInstagramPreview();
+      }
+    });
+    
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const existing = document.querySelector('.toast-notification');
+      if (existing) existing.remove();
+      
+      const toast = document.createElement('div');
+      toast.className = `toast-notification fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg z-50 font-medium text-sm ${
+        type === 'success' ? 'bg-green-500 text-white' : 
+        type === 'error' ? 'bg-red-500 text-white' : 
+        'bg-gray-800 text-white'
+      }`;
+      toast.textContent = message;
+      toast.style.animation = 'fadeIn 0.3s ease';
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ca0f48b11ece2a9',t:'MTc3MDQ0NzA0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
