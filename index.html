@@ -10,10 +10,18 @@
   <style>
     body {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
     }
     
     * {
       font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
     }
     
     .gradient-main {
@@ -44,79 +52,118 @@
       transform: scale(1.01);
     }
     
+    @media (max-width: 640px) {
+      .upload-zone:hover {
+        transform: none;
+      }
+    }
+    
     .mosaic-piece {
       transition: all 0.3s ease;
     }
     
-    .mosaic-piece:hover {
-      transform: scale(1.05);
-      z-index: 10;
-      box-shadow: 0 10px 30px rgba(0, 151, 178, 0.3);
+    @media (hover: hover) {
+      .mosaic-piece:hover {
+        transform: scale(1.05);
+        z-index: 10;
+        box-shadow: 0 10px 30px rgba(0, 151, 178, 0.3);
+      }
     }
     
     .btn-gradient {
       background: linear-gradient(90deg, #0097b2, #7ed957);
       transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
     }
     
-    .btn-gradient:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 151, 178, 0.4);
+    @media (hover: hover) {
+      .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 151, 178, 0.4);
+      }
     }
     
     .btn-gradient:active {
       transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 151, 178, 0.3);
     }
     
     .phone-frame {
       background: #000;
-      border-radius: 40px;
-      padding: 12px;
-      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+      border-radius: clamp(20px, 5vw, 40px);
+      padding: clamp(6px, 2vw, 12px);
+      box-shadow: 0 clamp(10px, 5vw, 25px) clamp(30px, 10vw, 80px) rgba(0, 0, 0, 0.5);
+      max-width: 100%;
     }
     
     .phone-screen {
       background: #fafafa;
-      border-radius: 32px;
+      border-radius: clamp(16px, 4vw, 32px);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      aspect-ratio: 9 / 16;
+      max-height: 80vh;
+      width: 100%;
     }
     
     .phone-notch {
-      width: 120px;
-      height: 28px;
+      width: clamp(70px, 20vw, 120px);
+      height: clamp(18px, 4vw, 28px);
       background: #000;
-      border-radius: 0 0 20px 20px;
+      border-radius: 0 0 clamp(12px, 3vw, 20px) clamp(12px, 3vw, 20px);
       margin: 0 auto;
       position: relative;
+      flex-shrink: 0;
     }
     
     .phone-notch::before {
       content: '';
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: clamp(6px, 1.5vw, 10px);
+      height: clamp(6px, 1.5vw, 10px);
       background: #1a1a1a;
       border-radius: 50%;
-      right: 20px;
-      top: 8px;
+      right: clamp(12px, 2vw, 20px);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .phone-content-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    }
+    
+    .phone-content-wrapper.dragging {
+      cursor: grabbing;
+    }
+    
+    .phone-content {
+      height: 100%;
+      transition: transform 0.1s linear;
     }
     
     .instagram-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
+      gap: 1px;
+      width: 100%;
     }
     
     .instagram-grid img {
       aspect-ratio: 1;
       object-fit: cover;
       width: 100%;
+      height: auto;
     }
     
     .story-ring {
       background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
       padding: 2px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
     
     .modal-backdrop {
@@ -126,17 +173,20 @@
     
     .config-card {
       background: white;
-      border-radius: 16px;
+      border-radius: clamp(12px, 3vw, 16px);
       box-shadow: 0 4px 20px rgba(0, 151, 178, 0.1);
     }
     
     .style-option {
       transition: all 0.2s ease;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     
-    .style-option:hover {
-      transform: scale(1.05);
+    @media (hover: hover) {
+      .style-option:hover {
+        transform: scale(1.05);
+      }
     }
     
     .style-option.selected {
@@ -147,9 +197,11 @@
     
     input[type="range"] {
       -webkit-appearance: none;
+      width: 100%;
       height: 8px;
       border-radius: 4px;
       background: linear-gradient(90deg, #0097b2, #7ed957);
+      outline: none;
     }
     
     input[type="range"]::-webkit-slider-thumb {
@@ -161,6 +213,26 @@
       border: 3px solid #0097b2;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #0097b2;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    input[type="color"] {
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+    
+    input[type="text"] {
+      font-size: 16px;
     }
     
     .fade-in {
@@ -181,18 +253,45 @@
       50% { opacity: 0.7; }
     }
     
-    /* Responsividade */
-    @media (max-width: 640px) {
-      .phone-frame {
-        border-radius: 30px;
-        padding: 8px;
+    /* Tablet optimizations */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      main {
+        gap: 1rem !important;
       }
-      .phone-screen {
-        border-radius: 24px;
+    }
+    
+    /* Small phones */
+    @media (max-width: 375px) {
+      header {
+        padding: 1rem 1rem !important;
       }
-      .phone-notch {
-        width: 90px;
-        height: 22px;
+      
+      h1 {
+        font-size: 1.25rem !important;
+      }
+      
+      h2 {
+        font-size: 1rem !important;
+      }
+      
+      .config-card {
+        padding: 1rem !important;
+      }
+      
+      button {
+        font-size: 0.875rem !important;
+        padding: 0.75rem !important;
+      }
+    }
+    
+    /* Very large screens */
+    @media (min-width: 1920px) {
+      main {
+        gap: 3rem !important;
+      }
+      
+      .config-card {
+        max-width: 600px;
       }
     }
   </style>
@@ -305,8 +404,8 @@
   </div><!-- Instagram Preview Modal -->
   <div id="instagramModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center p-2 sm:p-4 overflow-auto">
    <div class="relative w-full max-w-xs sm:max-w-sm h-auto flex flex-col justify-center mx-auto"><!-- Close Button --> <button onclick="closeInstagramPreview()" class="absolute -top-8 sm:-top-12 right-0 text-white text-lg font-medium hover:text-gray-300 flex items-center gap-2 z-10"> ✕ Fechar </button> <!-- Phone Frame -->
-    <div class="phone-frame w-full" style="max-height: 90vh; display: flex; flex-direction: column;">
-     <div class="phone-screen flex flex-col" style="max-height: 88vh; overflow-y-auto;"><!-- Notch -->
+    <div class="phone-frame w-full">
+     <div class="phone-screen"><!-- Notch -->
       <div class="phone-notch flex-shrink-0"></div><!-- Instagram Header -->
       <div class="bg-white px-3 sm:px-4 py-2 border-b border-gray-200 flex items-center justify-between flex-shrink-0"><span class="text-base sm:text-lg">←</span> <span class="font-bold text-xs sm:text-sm">seuperfil</span> <span class="text-base sm:text-lg">⋮</span>
       </div><!-- Profile Section -->
@@ -360,8 +459,12 @@
        </div>
       </div><!-- Tab Bar -->
       <div class="bg-white flex border-b border-gray-200 flex-shrink-0"><button class="flex-1 py-2 sm:py-3 border-b-2 border-black"> <span class="text-base sm:text-lg">▦</span> </button> <button class="flex-1 py-2 sm:py-3 text-gray-400"> <span class="text-base sm:text-lg">🎬</span> </button> <button class="flex-1 py-2 sm:py-3 text-gray-400"> <span class="text-base sm:text-lg">👤</span> </button>
-      </div><!-- Instagram Grid -->
-      <div id="instagramGrid" class="instagram-grid bg-white"><!-- Grid items will be added here -->
+      </div><!-- Instagram Grid Wrapper -->
+      <div id="phoneContentWrapper" class="phone-content-wrapper">
+       <div id="phoneContent" class="phone-content">
+        <div id="instagramGrid" class="instagram-grid bg-white"><!-- Grid items will be added here -->
+        </div>
+       </div>
       </div>
      </div>
     </div>
@@ -501,6 +604,11 @@
       const selectedBtn = document.querySelector(`[data-size="${rows}"]`);
       selectedBtn.classList.remove('border-gray-200');
       selectedBtn.classList.add('border-cyan-500', 'bg-cyan-50');
+      
+      // Update preview in real-time if mosaic exists
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     }
     
     function setBgStyle(style) {
@@ -512,6 +620,11 @@
       const selectedOpt = document.querySelector(`[data-style="${style}"]`);
       selectedOpt.classList.remove('border-gray-200');
       selectedOpt.classList.add('border-cyan-500', 'bg-cyan-50');
+      
+      // Update preview in real-time if mosaic exists
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     }
     
     function updateColorFromText(type) {
@@ -526,20 +639,36 @@
     
     document.getElementById('primaryColor').addEventListener('input', (e) => {
       document.getElementById('primaryColorText').value = e.target.value;
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     });
     
     document.getElementById('secondaryColor').addEventListener('input', (e) => {
       document.getElementById('secondaryColorText').value = e.target.value;
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     });
     
     function updateLogoSize() {
       const size = document.getElementById('logoSize').value;
       document.getElementById('logoSizeValue').textContent = size;
+      
+      // Update preview in real-time if mosaic exists
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     }
     
     function updateEffectIntensity() {
       const intensity = document.getElementById('effectIntensity').value;
       document.getElementById('effectIntensityValue').textContent = intensity;
+      
+      // Update preview in real-time if mosaic exists
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     }
     
     function setEffectIntensity(value) {
@@ -557,11 +686,92 @@
       if (value === 33) buttons[1].classList.add('border-cyan-500', 'bg-cyan-50');
       if (value === 66) buttons[2].classList.add('border-cyan-500', 'bg-cyan-50');
       if (value === 100) buttons[3].classList.add('border-cyan-500', 'bg-cyan-50');
+      
+      // Update preview in real-time if mosaic exists
+      if (generatedImages.length > 0) {
+        regenerateMosaicPreview();
+      }
     }
     
     // Initialize defaults
     setGridSize(3);
     setBgStyle('gradient');
+    
+    async function regenerateMosaicPreview() {
+      if (!uploadedImage) return;
+      
+      const primaryColor = document.getElementById('primaryColor').value;
+      const secondaryColor = document.getElementById('secondaryColor').value;
+      const logoSize = document.getElementById('logoSize').value / 100;
+      
+      generatedImages = [];
+      
+      // Create mosaic
+      const mosaicWidth = 1080 * 3;
+      const mosaicHeight = 1080 * gridRows;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = mosaicWidth;
+      canvas.height = mosaicHeight;
+      const ctx = canvas.getContext('2d');
+      
+      // Draw background
+      drawBackground(ctx, mosaicWidth, mosaicHeight, primaryColor, secondaryColor);
+      
+      // Load and draw logo
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = () => {
+          console.error('Failed to load image');
+          resolve();
+        };
+        img.src = uploadedImage;
+      });
+      
+      const imgAspect = img.width / img.height;
+      const canvasAspect = mosaicWidth / mosaicHeight;
+      
+      let drawWidth, drawHeight;
+      if (imgAspect > canvasAspect) {
+        drawWidth = mosaicWidth * logoSize;
+        drawHeight = drawWidth / imgAspect;
+      } else {
+        drawHeight = mosaicHeight * logoSize;
+        drawWidth = drawHeight * imgAspect;
+      }
+      
+      const x = (mosaicWidth - drawWidth) / 2;
+      const y = (mosaicHeight - drawHeight) / 2;
+      
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+      
+      // Split into pieces
+      for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < 3; col++) {
+          const pieceCanvas = document.createElement('canvas');
+          pieceCanvas.width = 1080;
+          pieceCanvas.height = 1080;
+          const pieceCtx = pieceCanvas.getContext('2d');
+          
+          pieceCtx.drawImage(
+            canvas,
+            col * 1080, row * 1080, 1080, 1080,
+            0, 0, 1080, 1080
+          );
+          
+          generatedImages.push({
+            index: row * 3 + col + 1,
+            dataUrl: pieceCanvas.toDataURL('image/png', 1.0)
+          });
+        }
+      }
+      
+      // Display mosaic preview
+      displayMosaic();
+    }
     
     async function generateMosaic() {
       if (!uploadedImage) {
@@ -887,6 +1097,7 @@
       
       const content = document.getElementById('phoneContent');
       content.style.cursor = 'grabbing';
+      wrapper.classList.add('dragging');
     }
     
     function moveDrag(e) {
@@ -900,13 +1111,13 @@
       const content = document.getElementById('phoneContent');
       currentTranslateY += deltaY;
       
-      // Limitar o scroll
+      // Limit scroll
       currentTranslateY = Math.min(currentTranslateY, 0);
       currentTranslateY = Math.max(currentTranslateY, getMaxScroll());
       
       content.style.transform = `translateY(${currentTranslateY}px)`;
       
-      // Calcular velocidade
+      // Calculate velocity
       const now = Date.now();
       const timeDelta = now - lastTimestamp;
       if (timeDelta > 0) {
@@ -922,10 +1133,12 @@
       
       isDragging = false;
       
+      const wrapper = document.getElementById('phoneContentWrapper');
       const content = document.getElementById('phoneContent');
       content.style.cursor = 'grab';
+      wrapper.classList.remove('dragging');
       
-      // Inércia
+      // Inertia
       let velocity = lastVelocity * 0.95;
       let rafId;
       
@@ -937,7 +1150,7 @@
         
         currentTranslateY += velocity * 16;
         
-        // Limitar
+        // Limit
         currentTranslateY = Math.min(currentTranslateY, 0);
         currentTranslateY = Math.max(currentTranslateY, getMaxScroll());
         
@@ -959,7 +1172,7 @@
       const content = document.getElementById('phoneContent');
       currentTranslateY -= e.deltaY * 0.5;
       
-      // Limitar
+      // Limit
       currentTranslateY = Math.min(currentTranslateY, 0);
       currentTranslateY = Math.max(currentTranslateY, getMaxScroll());
       
@@ -1022,5 +1235,5 @@
       }, 3000);
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ca0f48b11ece2a9',t:'MTc3MDQ0NzA0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ca11b01c6aae2a9',t:'MTc3MDQ0ODYyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
